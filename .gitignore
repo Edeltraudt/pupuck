@@ -5,3 +5,7 @@
 # React Router
 /.react-router/
 /build/
+
+# local links to sibling
+/public/content
+/public/logs.json

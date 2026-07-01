@@ -8,15 +8,13 @@ type Props = {
 
 export function EntryItem({ entry, isActive, onPreload }: Props) {
   const circleClass = isActive
-    ? "bg-white border-theme-200 rounded-lg shadow-md shadow-theme-200/20"
+    ? "pb-3 bg-white border-theme-200 rounded-lg shadow-md shadow-theme-200/20"
     : "border-transparent hover:underline";
 
-  const lineClass = isActive ? "top-0 bottom-0" : "-top-3 -bottom-3";
-
-  const headingClass = isActive ? "text-md" : "text-sm";
+  const lineClass = isActive ? "top-0 bottom-0" : "-top-3 bottom-0";
 
   return (
-    <div className={`py-3 pl-4 pr-6 flex gap-5 border -m-px ${circleClass}`}>
+    <div className={`pt-3 pl-4 pr-6 flex gap-5 border -m-px ${circleClass}`}>
       <div className="relative flex justify-center">
         <span
           className={`absolute ${lineClass} border-l-2 border-theme-950/20 `}
@@ -34,7 +32,7 @@ export function EntryItem({ entry, isActive, onPreload }: Props) {
         )}
       </div>
 
-      <div className="pt-0.5 pb-2">
+      <div className={`pt-0.5 ${isActive ? "pb-2" : ""}`}>
         <span
           aria-label="Category"
           className="text-xs text-theme-950/60 font-mono leading-none"
@@ -44,7 +42,7 @@ export function EntryItem({ entry, isActive, onPreload }: Props) {
           <span className="text-xs font-mono">{entry.commit.slice(0, 7)}</span>
         </span>
         <h3
-          className={`font-medium text-theme-950 mt-1 mb-2 leading-none ${headingClass}`}
+          className={`text-sm font-medium text-theme-950 mt-1 mb-2 leading-none`}
         >
           {entry.title}
         </h3>

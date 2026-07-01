@@ -7,4 +7,8 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
   },
+  server: {
+    // lets dev-server CSS transforms read ../theme.css at the repo root (see app.css)
+    fs: { allow: [".."] },
+  },
 });

@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
-import { Outlet, useParams } from "react-router";
+import { Outlet, useNavigate, useParams } from "react-router";
 import { useLogs, type LogEntry } from "../lib/logs";
 import Panel from "./Panel";
 import Stage from "./Stage";
 
 const MAX_MOUNTED = 6; // ponytail: live-iframe RAM cap, meant to stay well under the full commit list as it grows past ~12.
-const FADE_MS = 150;
 const WARM_DELAY_MS = 400; // let the active commit's iframe claim bandwidth first
 
 function touch(
@@ -37,9 +36,59 @@ function byDistance(logs: LogEntry[], active: string | undefined): string[] {
 export default function View() {
   const { commit } = useParams();
   const logs = useLogs();
-  const active = commit ?? logs?.commits[0]?.commit;
+  const navigate = useNavigate();
+
   const [mounted, setMounted] = useState<string[]>([]);
   const [ready, setReady] = useState<Set<string>>(new Set());
+
+  const active = commit ?? logs?.commits[0]?.commit;
+
+  useEffect(() => {
+    if (!logs) return;
+    const commits = logs.commits;
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.ctrlKey || e.altKey || e.metaKey) {
+        return;
+      }
+
+      const target = e.target as HTMLElement | null;
+
+      if (target?.isContentEditable) {
+        return;
+      }
+
+      if (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)) {
+        return;
+      }
+
+      let step = 0;
+      switch (e.key) {
+        case "ArrowRight":
+        case "ArrowDown":
+          step = 1;
+          break;
+        case "ArrowLeft":
+        case "ArrowUp":
+          step = -1;
+          break;
+        default:
+          return;
+      }
+
+      const idx = commits.findIndex((c) => c.commit === active) + step;
+
+      if (idx < 0 || idx >= commits.length) {
+        return;
+      }
+
+      e.preventDefault();
+      navigate(`/${commits[idx].commit}`);
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [logs, active, navigate]);
 
   useEffect(() => {
     if (active) setMounted((prev) => touch(prev, active, active));

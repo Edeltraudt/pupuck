@@ -7,29 +7,27 @@ type Props = {
 };
 
 export function EntryItem({ entry, isActive, onPreload }: Props) {
-  const circleClass = isActive
+  const containerClass = isActive
     ? "pb-3 bg-white border-theme-200 rounded-lg shadow-md shadow-theme-200/20"
     : "border-transparent hover:underline";
 
   const lineClass = isActive ? "top-0 bottom-0" : "-top-3 bottom-0";
+  const circle1Class = isActive ? "bg-accent-200" : "scale-75 bg-theme-50";
+  const circle2Class = isActive ? "bg-accent-600" : "scale-75 bg-theme-950/40";
 
   return (
-    <div className={`pt-3 pl-4 pr-6 flex gap-5 border -m-px ${circleClass}`}>
+    <div className={`pt-3 pl-4 pr-6 flex gap-5 border -m-px ${containerClass}`}>
       <div className="relative flex justify-center">
         <span
           className={`absolute ${lineClass} border-l-2 border-theme-950/20 `}
         ></span>
-        {isActive ? (
-          <>
-            <span className="absolute top-2 w-4 h-4 bg-accent-200 rounded-full "></span>
-            <span className="absolute top-3 w-2 h-2 bg-accent-600 rounded-full"></span>
-          </>
-        ) : (
-          <>
-            <span className="absolute top-2.5 w-2.5 h-2.5 bg-theme-50 rounded-full "></span>
-            <span className="absolute top-3 w-1.5 h-1.5 bg-theme-950/40 rounded-full"></span>
-          </>
-        )}
+
+        <span
+          className={`absolute top-2 w-4 h-4 ${circle1Class} rounded-full ease-in duration-100`}
+        ></span>
+        <span
+          className={`absolute top-3 w-2 h-2 ${circle2Class} rounded-full ease-in duration-100`}
+        ></span>
       </div>
 
       <div className={`pt-0.5 ${isActive ? "pb-2" : ""}`}>

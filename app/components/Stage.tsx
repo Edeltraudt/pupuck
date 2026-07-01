@@ -16,7 +16,7 @@ export default function Stage({
   }
 
   return (
-    <div className="relative min-h-0 min-w-0 overflow-hidden rounded-2xl border border-theme-700/30 shadow-theme-800/15 shadow-2xl">
+    <div className="relative min-h-0 min-w-0 overflow-hidden rounded-2xl border border-theme-700/30 bg-theme-50 shadow-2xl shadow-theme-800/15">
       <div className="absolute z-10 flex w-full items-center gap-1 p-3">
         <div className="rounded-full border border-theme-700/30 bg-accent-200/20 px-3 py-1 font-mono text-sm text-stone-950/60 backdrop-blur-lg">
           <h1 className="inline">{projectName}</h1>

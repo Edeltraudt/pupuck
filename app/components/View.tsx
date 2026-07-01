@@ -1,12 +1,37 @@
 import { useEffect, useState } from "react";
 import { Outlet, useParams } from "react-router";
-import { useLogs } from "../lib/logs";
+import { useLogs, type LogEntry } from "../lib/logs";
 import Panel from "./Panel";
+import Stage from "./Stage";
 
-const MAX_MOUNTED = 3; // ponytail: small LRU pool of live iframes, raise if nav ever feels laggy
+const MAX_MOUNTED = 6; // ponytail: live-iframe RAM cap, meant to stay well under the full commit list as it grows past ~12.
+const FADE_MS = 150;
+const WARM_DELAY_MS = 400; // let the active commit's iframe claim bandwidth first
 
-function touch(mounted: string[], commit: string): string[] {
-  return [commit, ...mounted.filter((c) => c !== commit)].slice(0, MAX_MOUNTED);
+function touch(
+  mounted: string[],
+  target: string,
+  active: string | undefined,
+): string[] {
+  const next = [target, ...mounted.filter((c) => c !== target)];
+  if (next.length <= MAX_MOUNTED) return next;
+  const kept = next.slice(0, MAX_MOUNTED);
+  // never let LRU pressure evict the commit currently on screen
+  if (active && !kept.includes(active)) kept[kept.length - 1] = active;
+  return kept;
+}
+
+// nearest commits first (both directions from active), so idle warm-up spends
+// its limited slots on what the user is likely to click next, not list order
+function byDistance(logs: LogEntry[], active: string | undefined): string[] {
+  const idx = active ? logs.findIndex((e) => e.commit === active) : -1;
+  if (idx === -1) return logs.map((e) => e.commit);
+  const ordered = [logs[idx].commit];
+  for (let d = 1; idx - d >= 0 || idx + d < logs.length; d++) {
+    if (idx + d < logs.length) ordered.push(logs[idx + d].commit);
+    if (idx - d >= 0) ordered.push(logs[idx - d].commit);
+  }
+  return ordered;
 }
 
 export default function View() {
@@ -14,26 +39,79 @@ export default function View() {
   const logs = useLogs();
   const active = commit ?? logs?.[0]?.commit;
   const [mounted, setMounted] = useState<string[]>([]);
+  const [ready, setReady] = useState<Set<string>>(new Set());
+
+  const projectName = "cycle-dictionary"; // FIXME
 
   useEffect(() => {
-    if (active) setMounted((prev) => touch(prev, active));
+    if (active) setMounted((prev) => touch(prev, active, active));
   }, [active]);
 
+  useEffect(() => {
+    // drop ready-flags for anything LRU-evicted, so a later re-mount waits for its own load
+    setReady((prev) => {
+      const filtered = new Set([...prev].filter((c) => mounted.includes(c)));
+      return filtered.size === prev.size ? prev : filtered;
+    });
+  }, [mounted]);
+
+  useEffect(() => {
+    if (!logs) {
+      return;
+    }
+
+    const id = setTimeout(() => {
+      setMounted((prev) => {
+        // touch farthest-first so the nearest neighbors end up most-recently-touched,
+        // i.e. last to be evicted once the list outgrows MAX_MOUNTED. touch() caps
+        // and protects `active` on every call, so it's fine to run it for the full list.
+        let next = prev;
+        for (const commit of [...byDistance(logs, active)].reverse()) {
+          next = touch(next, commit, active);
+        }
+        return next;
+      });
+    }, WARM_DELAY_MS);
+
+    return () => clearTimeout(id);
+  }, [logs, active]);
+
   function preload(target: string) {
-    setMounted((prev) => (prev.includes(target) ? prev : touch(prev, target)));
+    setMounted((prev) =>
+      prev.includes(target) ? prev : touch(prev, target, active),
+    );
+  }
+
+  function markReady(c: string) {
+    setReady((prev) => (prev.has(c) ? prev : new Set(prev).add(c)));
   }
 
   return (
-    <main className="relative h-screen w-screen overflow-hidden">
-      {mounted.map((c) => (
-        <iframe
-          key={c}
-          src={`/content/${c}/index.html`}
-          className="absolute inset-0 h-full w-full border-0"
-          style={{ visibility: c === active ? "visible" : "hidden" }}
-          title={c}
-        />
-      ))}
+    <main
+      className="grid h-screen w-screen gap-4 overflow-hidden p-8
+        portrait:grid-cols-[1fr] portrait:grid-rows-[1fr_auto]
+        landscape:grid-cols-[1fr_auto] landscape:grid-rows-[1fr]"
+    >
+      <Stage projectName={projectName} activeCommit={commit}>
+        {mounted.map((commit) => {
+          const shown = commit === active && ready.has(commit);
+          return (
+            <iframe
+              key={commit}
+              src={`/content/${commit}/index.html`}
+              onLoad={() => markReady(commit)}
+              className="h-full w-full border-0 absolute"
+              style={{
+                opacity: shown ? 1 : 0,
+                visibility: shown ? "visible" : "hidden",
+                pointerEvents: shown ? "auto" : "none",
+                transition: `opacity ${FADE_MS}ms ease-out, visibility ${FADE_MS}ms ease-out`,
+              }}
+              title={commit}
+            />
+          );
+        })}
+      </Stage>
       <Panel logs={logs} active={active} onPreload={preload} />
       <Outlet />
     </main>

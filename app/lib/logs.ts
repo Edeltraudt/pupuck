@@ -10,15 +10,26 @@ export type LogEntry = {
   text: string[];
 };
 
-let cache: Promise<LogEntry[]> | null = null;
+export type Project = {
+  name: string;
+  themeColor?: string;
+  accentColor?: string;
+};
 
-function loadLogs(): Promise<LogEntry[]> {
+export type Logs = {
+  project: Project;
+  commits: LogEntry[];
+};
+
+let cache: Promise<Logs> | null = null;
+
+function loadLogs(): Promise<Logs> {
   cache ??= fetch("/logs.json").then((r) => r.json());
   return cache;
 }
 
-export function useLogs(): LogEntry[] | null {
-  const [logs, setLogs] = useState<LogEntry[] | null>(null);
+export function useLogs(): Logs | null {
+  const [logs, setLogs] = useState<Logs | null>(null);
   useEffect(() => {
     loadLogs().then(setLogs);
   }, []);

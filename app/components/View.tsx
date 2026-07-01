@@ -37,11 +37,9 @@ function byDistance(logs: LogEntry[], active: string | undefined): string[] {
 export default function View() {
   const { commit } = useParams();
   const logs = useLogs();
-  const active = commit ?? logs?.[0]?.commit;
+  const active = commit ?? logs?.commits[0]?.commit;
   const [mounted, setMounted] = useState<string[]>([]);
   const [ready, setReady] = useState<Set<string>>(new Set());
-
-  const projectName = "cycle-dictionary"; // FIXME
 
   useEffect(() => {
     if (active) setMounted((prev) => touch(prev, active, active));
@@ -66,7 +64,7 @@ export default function View() {
         // i.e. last to be evicted once the list outgrows MAX_MOUNTED. touch() caps
         // and protects `active` on every call, so it's fine to run it for the full list.
         let next = prev;
-        for (const commit of [...byDistance(logs, active)].reverse()) {
+        for (const commit of [...byDistance(logs.commits, active)].reverse()) {
           next = touch(next, commit, active);
         }
         return next;
@@ -92,7 +90,7 @@ export default function View() {
         portrait:grid-cols-[1fr] portrait:grid-rows-[1fr_auto]
         landscape:grid-cols-[1fr_auto] landscape:grid-rows-[1fr]"
     >
-      <Stage projectName={projectName} activeCommit={commit}>
+      <Stage projectName={logs?.project.name} activeCommit={commit}>
         {mounted.map((commit) => {
           const shown = commit === active && ready.has(commit);
           return (
@@ -100,19 +98,17 @@ export default function View() {
               key={commit}
               src={`/content/${commit}/index.html`}
               onLoad={() => markReady(commit)}
-              className="h-full w-full border-0 absolute"
-              style={{
-                opacity: shown ? 1 : 0,
-                visibility: shown ? "visible" : "hidden",
-                pointerEvents: shown ? "auto" : "none",
-                transition: `opacity ${FADE_MS}ms ease-out, visibility ${FADE_MS}ms ease-out`,
-              }}
+              className={`absolute h-full w-full border-0 transition-opacity duration-150 ease-out ${
+                shown
+                  ? "visible pointer-events-auto opacity-100"
+                  : "invisible pointer-events-none opacity-0"
+              }`}
               title={commit}
             />
           );
         })}
       </Stage>
-      <Panel logs={logs} active={active} onPreload={preload} />
+      <Panel logs={logs?.commits ?? null} active={active} onPreload={preload} />
       <Outlet />
     </main>
   );

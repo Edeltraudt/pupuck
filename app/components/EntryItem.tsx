@@ -46,12 +46,17 @@ export function EntryItem({ entry, isActive, onPreload }: Props) {
         {isActive && (
           <>
             {entry.text.map((text) => (
-              <p className="text-sm mb-2 leading-relaxed">{text}</p>
+              <p key={text} className="text-sm mb-2 leading-relaxed">
+                {text}
+              </p>
             ))}
 
             <p aria-label="Tags">
               {entry.tags.map((tag) => (
-                <span className="text-xs rounded bg-accent-300/20 border border-accent-300/80 text-accent-700 py-1 px-2 inline-block mr-1 text-2xs font-mono">
+                <span
+                  key={tag}
+                  className="text-xs rounded bg-accent-300/20 border border-accent-300/80 text-accent-700 py-1 px-2 inline-block mr-1 text-2xs font-mono"
+                >
                   {tag}
                 </span>
               ))}

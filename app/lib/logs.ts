@@ -10,14 +10,8 @@ export type LogEntry = {
   text: string[];
 };
 
-export type Project = {
-  name: string;
-  themeColor?: string;
-  accentColor?: string;
-};
-
 export type Logs = {
-  project: Project;
+  project: string;
   commits: LogEntry[];
 };
 

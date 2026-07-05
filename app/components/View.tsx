@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Outlet, useNavigate, useParams } from "react-router";
 import { useLogs, type LogEntry } from "../lib/logs";
+import Loader from "./Loader";
 import Panel from "./Panel";
 import Stage from "./Stage";
 
@@ -140,6 +141,7 @@ export default function View() {
         landscape:grid-cols-[1fr_auto] landscape:grid-rows-[1fr]"
     >
       <Stage projectName={logs?.project.name} activeCommit={commit}>
+        {active && !ready.has(active) && <Loader />}
         {mounted.map((commit) => {
           const shown = commit === active && ready.has(commit);
           return (

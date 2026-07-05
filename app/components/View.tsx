@@ -116,8 +116,15 @@ export default function View() {
   // Esc brings it back to the active entry
   const prevActive = useRef<string | undefined>(undefined);
   useEffect(() => {
+    const entry = document.querySelector<HTMLAnchorElement>(
+      "nav a[aria-current='page']",
+    );
     if (prevActive.current !== undefined && prevActive.current !== active) {
       stageRef.current?.focus();
+      entry?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    } else if (active) {
+      // deep link / first load: land with the active entry visible
+      entry?.scrollIntoView({ block: "nearest" });
     }
     prevActive.current = active;
   }, [active]);
@@ -173,8 +180,8 @@ export default function View() {
     >
       <Stage
         ref={stageRef}
-        projectName={logs?.project.name}
-        activeCommit={commit}
+        projectName={logs?.project}
+        activeCommit={active}
       >
         {active && !ready.has(active) && <Loader />}
         {mounted.map((commit) => {

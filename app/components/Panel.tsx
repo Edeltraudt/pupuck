@@ -11,8 +11,9 @@ type Props = {
 
 export default function Panel({ logs, active, onPreload }: Props) {
   return (
-    <section className="p-1 w-96 min-h-0 min-w-0 overflow-y-hidden bg-theme-50 rounded-2xl shadow-theme-800/15 shadow-2xl border border-theme-700/30 portrait:max-h-64 portrait:w-full focus-within:ring-2 focus-within:ring-accent-500">
-      <div className="rounded-xl overflow-y-auto h-full border border-theme-200 flex flex-col">
+    <section className="p-1 w-96 min-h-0 min-w-0 overflow-y-hidden bg-theme-50 rounded-2xl shadow-theme-800/15 shadow-2xl border border-theme-700/30 portrait:max-h-64 portrait:w-full has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent-500">
+      {/* scroll-py keeps focus rings clear of the clipped edges on scroll-into-view */}
+      <div className="rounded-xl overflow-y-auto scroll-py-2 h-full border border-theme-200 flex flex-col">
         <header className="border-b border-theme-200 py-4 px-5">
           <h2 className="sr-only">Design decisions</h2>
           {/* Keyboard navigation hint */}

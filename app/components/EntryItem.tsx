@@ -39,9 +39,7 @@ export function EntryItem({ entry, isActive, onPreload }: Props) {
           {" • "}
           <span className="text-xs font-mono">{entry.commit.slice(0, 7)}</span>
         </span>
-        <h3
-          className={`text-sm font-medium text-theme-950 mt-1 mb-2 leading-none`}
-        >
+        <h3 className="text-sm font-medium text-theme-950 mt-1 mb-2 leading-tight text-balance">
           {entry.title}
         </h3>
 

@@ -24,7 +24,7 @@ export type Logs = {
 let cache: Promise<Logs> | null = null;
 
 function loadLogs(): Promise<Logs> {
-  cache ??= fetch("/logs.json").then((r) => r.json());
+  cache ??= fetch("/content/logs.json").then((r) => r.json());
   return cache;
 }
 
